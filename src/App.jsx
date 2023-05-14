@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
@@ -6,6 +6,30 @@ import './App.css'
 function App() {
   const [count, setCount] = useState(0);
   const [row, setRow] = useState([]);
+  const tableId = "resTable";
+
+  useEffect(() => {
+    document.title = `you clicked ${count} times`;
+
+    return () => {
+      document.title = "Vite + React";
+    };
+  }, [count]);
+
+  useEffect(() => {
+    console.log('mount or update');
+    return () => {
+      console.log('Unmount');
+    }
+  })
+
+  useEffect(() => {
+    console.log('mount only');
+  }, [])
+
+  useEffect(() => {
+    console.log('update only row');
+  }, [row])
 
   function handleClick(){
     if(row.length === 0){
@@ -18,12 +42,10 @@ function App() {
       )
     }
   }
-  
-  console.log(row);
-  
 
   return (
     <>
+      <button onClick={count => setCount((count) => count + 1)}>Count</button>
       <div>
         <a href="https://vitejs.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
@@ -36,21 +58,23 @@ function App() {
       <button onClick={handleClick}>
         미세먼지 불러오기
       </button>
-      <table>
+      <table id={tableId}>
         <thead>
+          <tr>
           <th>이름</th>
           <th>PM10</th>
           <th>O3</th>
           <th>상태</th>
+          </tr>
         </thead>
         <tbody id="rowData">
           {
-          row.map(function(obj) {
-            return <tr>
-              <td>{obj.MSRSTE_NM}</td>
-              <td>{obj.PM10}</td>
-              <td>{obj.O3}</td>
-              <td>{obj.IDEX_NM}</td>
+          row.map((gu, idx) => {
+            return <tr key={idx}>
+              <td>{gu.MSRSTE_NM}</td>
+              <td>{gu.PM10}</td>
+              <td>{gu.O3}</td>
+              <td>{gu.IDEX_NM}</td>
               </tr>
           })
           }
