@@ -42,17 +42,31 @@ function Worldcup()
     const [round, setRound] = useState(0);
     const [nextGame, setNextGame] = useState([]);
     const [showImg, setShowImg] = useState(false);
-
-    useEffect(() => {
-        let timer;
-        if(showImg){
-            timer = setTimeout(()=> setShowImg(false), 3000);
-        }
-        return () => clearTimeout(timer);
-    })
-    const handleClick = () => {setShowImg(true)};
+    const [stat, setStat] = useState({
+        '기생충': 0,
+        '내부자들': 0,
+        '다크나이트라이즈': 0,
+        '더울프오브더스트리트': 0,
+        '데드풀': 0,
+        '라이언킹': 0,
+        '베테랑': 0,
+        '신세계': 0,
+        '악마를보았다': 0,
+        '다크나이트': 0,
+        '어벤져스엔드게임': 0,
+        '인셉션': 0,
+        '인터스텔라': 0,
+        '추격자': 0,
+        '타짜': 0,
+        '해바라기': 0
+    });
     
     useEffect(() => {
+        const char = localStorage.getItem("2017110922");
+        if(char != null){
+            setStat(JSON.parse(char));
+        }
+
         setGame(candidate.map(c => {
             return{name: c.name, src: c.src, order: Math.random()};
         }).sort((l, r) => {
@@ -69,41 +83,80 @@ function Worldcup()
         }
     }, [round]);
 
-    
-    
+    useEffect(() => {
+        let timer;
+        if(showImg){
+            timer = setTimeout(()=> setShowImg(false), 3000);
+        }
+        return () => clearTimeout(timer);
+    })
+    const sortedStat = Object.fromEntries(
+        Object.entries(stat).sort(([, a], [, b]) => b - a)
+      );
+
     if(game.length === 1)
     {
+        localStorage.setItem("2017110922", JSON.stringify(stat));
         return <div className='ibox'> 
             <div className='ibox-title'>이상형 월드컵 우승</div>
-            <img src={game[0].src} /> <p>{game[0].name}</p>
+            <img src={game[0].src} /> <p>{game[0].name}</p> <p>{ stat[ game[0].name] }번 승리</p>
+            { <table id="winWorldcupTable">
+                <tbody>
+                {  
+                    Object.keys(sortedStat).map(item => {
+                        const name = item
+                        const win = stat[item]
+                        for(var i=0; i<16; i++){
+                            if(candidate[i].name === name){
+                                var src = candidate[i].src
+                            }
+                        }
+                        return <tr key={name}>
+                            <td><img src={src}/></td>
+                            <td>{name}</td>
+                            <td>{win}</td>
+                        </tr>
+                    })
+                }
+                </tbody>
+            </table>}
         </div>
     }
     if(game.length === 0 || round + 1 > game.length/2) return <p>로딩중</p>;
+    const left = round* 2, right = round*2 + 1;
+    console.log(stat);
+    const leftFunction = () =>{
+        console.log('left Function');
+        setStat({
+            ...stat,
+            [game[left].name]: stat[game[left].name] + 1
+        });
+        // setStat((prevStat) =>{
+        //     prevStat[ game[left].name ] = prevStat[ game[left].name ] + 1;
+        //     return prevStat;
+        // });  
+        setNextGame((prev) => prev.concat(game[left]));
+        setRound(round => round +1);
+    };
+    const rightFunction = () =>{
+        console.log('right Function');
+        setStat({
+            ...stat,
+            [game[right].name]: stat[game[right].name] + 1
+        });
+        // setStat((prevStat) =>{
+        //     prevStat[ game[right].name ] = prevStat[ game[right].name ] + 1;
+        //     return prevStat;
+        // });
+        setNextGame((prev) => prev.concat(game[right]));
+        setRound(round => round +1);
+    };
     return <div className='ibox-content'>
             <div className='ibox-title'>추억의 명작 이상형 월드컵 {round + 1}/{game.length/2} <b>{game.length === 2 ? "결승": game.length+"강"}</b></div>    
-            <img className='wleft' src={game[round*2].src} onClick={() =>{
-                setNextGame((prev) => prev.concat(game[round*2]));
-                setRound(round => round +1);
-                handleClick;
-                {showImg && 
-                    <div className='center-img'>
-                        <img src={game[round*2].src}></img>
-                    </div>}
-            }}/>
-
-            <img className='wright' src={game[round*2+1].src} onClick={() =>{
-                setNextGame((prev) => prev.concat(game[round*2+1]));
-                setRound(round => round +1);
-                handleClick;
-                {showImg && 
-                    <div className='center-img'>
-                        <img src={game[round*2+1].src}></img>
-                    </div>}
-            }}/>
-            <div className='ibox-info'>
-                <span className='l-info'>{game[round*2].name}</span> 
-                <span className='r-info'>{game[round*2+1].name}</span>
-            </div>
+            <img className='wleft' src={game[left].src} onClick={leftFunction}/>
+            <p className='l-info'>{game[left].name}</p>
+            <img className='wright' src={game[right].src} onClick={rightFunction}/>
+            <p className='r-info'>{game[right].name}</p>
         </div>
 }
 
